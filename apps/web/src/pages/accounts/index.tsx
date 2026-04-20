@@ -96,12 +96,13 @@ const AccountPage = () => {
           添加读书账号
         </Button>
       </div>
-      <Table aria-label="Example static collection table">
+      <div className="overflow-x-auto">
+      <Table aria-label="账号列表">
         <TableHeader>
-          <TableColumn>ID</TableColumn>
+          <TableColumn className="hidden sm:table-cell">ID</TableColumn>
           <TableColumn>用户名</TableColumn>
           <TableColumn>状态</TableColumn>
-          <TableColumn>更新时间</TableColumn>
+          <TableColumn className="hidden sm:table-cell">更新时间</TableColumn>
           <TableColumn>操作</TableColumn>
         </TableHeader>
         <TableBody
@@ -114,7 +115,7 @@ const AccountPage = () => {
 
             return (
               <TableRow key={item.id}>
-                <TableCell>{item.id}</TableCell>
+                <TableCell className="hidden sm:table-cell">{item.id}</TableCell>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>
                   {isBlocked ? (
@@ -132,7 +133,7 @@ const AccountPage = () => {
                     </Chip>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   {dayjs(item.updatedAt).format('YYYY-MM-DD')}
                 </TableCell>
                 <TableCell className="flex gap-2">
@@ -167,6 +168,7 @@ const AccountPage = () => {
           }) || []}
         </TableBody>
       </Table>
+      </div>
 
       <Modal
         isOpen={isOpen}

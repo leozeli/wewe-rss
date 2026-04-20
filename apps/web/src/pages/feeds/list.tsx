@@ -66,7 +66,7 @@ const ArticleList: FC = () => {
       >
         <TableHeader>
           <TableColumn key="title">标题</TableColumn>
-          <TableColumn width={180} key="publishTime">
+          <TableColumn width={180} key="publishTime" className="hidden sm:table-cell">
             发布时间
           </TableColumn>
         </TableHeader>
@@ -83,7 +83,7 @@ const ArticleList: FC = () => {
 
                 if (columnKey === 'publishTime') {
                   value = dayjs(value * 1e3).format('YYYY-MM-DD HH:mm:ss');
-                  return <TableCell>{value}</TableCell>;
+                  return <TableCell className="hidden sm:table-cell">{value}</TableCell>;
                 }
 
                 if (columnKey === 'title') {

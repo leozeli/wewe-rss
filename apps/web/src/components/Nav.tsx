@@ -6,6 +6,9 @@ import {
   NavbarBrand,
   NavbarContent,
   NavbarItem,
+  NavbarMenu,
+  NavbarMenuItem,
+  NavbarMenuToggle,
   Tooltip,
 } from '@nextui-org/react';
 import { ThemeSwitcher } from './ThemeSwitcher';
@@ -32,6 +35,7 @@ const navbarItemLink = [
 const Nav = () => {
   const { pathname } = useLocation();
   const [releaseVersion, setReleaseVersion] = useState(appVersion);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch('https://api.github.com/repos/cooderl/wewe-rss/releases/latest')
@@ -46,7 +50,10 @@ const Nav = () => {
 
   return (
     <div>
-      <Navbar isBordered>
+      <Navbar isBordered isMenuOpen={isMenuOpen} onMenuOpenChange={setIsMenuOpen}>
+        <NavbarContent className="sm:hidden" justify="start">
+          <NavbarMenuToggle aria-label={isMenuOpen ? '关闭菜单' : '打开菜单'} />
+        </NavbarContent>
         <Tooltip
           content={
             <div className="p-1">
@@ -108,6 +115,20 @@ const Nav = () => {
             <GitHubIcon />
           </Link>
         </NavbarContent>
+        <NavbarMenu>
+          {navbarItemLink.map((item) => (
+            <NavbarMenuItem key={item.href} isActive={pathname.startsWith(item.href)}>
+              <Link
+                color={pathname.startsWith(item.href) ? 'primary' : 'foreground'}
+                href={item.href}
+                size="lg"
+                onPress={() => setIsMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            </NavbarMenuItem>
+          ))}
+        </NavbarMenu>
       </Navbar>
     </div>
   );

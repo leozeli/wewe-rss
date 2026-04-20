@@ -68,8 +68,8 @@ const Feeds = () => {
     trpc.feed.delete.useMutation({});
 
   const [wxsLink, setWxsLink] = useState('');
-
   const [currentMpId, setCurrentMpId] = useState(id || '');
+  const [isMobileFeedOpen, setIsMobileFeedOpen] = useState(false);
 
   const handleConfirm = async () => {
     console.log('wxsLink', wxsLink);
@@ -142,76 +142,106 @@ const Feeds = () => {
     document.body.removeChild(link);
   };
 
+  const feedSidebar = (
+    <>
+      <div className="pb-4 flex justify-between align-middle items-center">
+        <Button
+          color="primary"
+          size="sm"
+          onPress={onOpen}
+          endContent={<PlusIcon />}
+        >
+          添加
+        </Button>
+        <div className="font-normal text-sm">
+          共{feedData?.items.length || 0}个订阅
+        </div>
+      </div>
+
+      {feedData?.items ? (
+        <Listbox
+          aria-label="订阅源"
+          emptyContent="暂无订阅"
+          onAction={(key) => {
+            setCurrentMpId(key as string);
+            setIsMobileFeedOpen(false);
+          }}
+        >
+          <ListboxSection showDivider>
+            <ListboxItem
+              key={''}
+              href={`/feeds`}
+              className={isActive('') ? 'bg-primary-50 text-primary' : ''}
+              startContent={<Avatar name="ALL"></Avatar>}
+            >
+              全部
+            </ListboxItem>
+          </ListboxSection>
+
+          <ListboxSection className="overflow-y-auto h-[calc(100vh-260px)]">
+            {feedData?.items.map((item) => {
+              return (
+                <ListboxItem
+                  href={`/feeds/${item.id}`}
+                  className={
+                    isActive(item.id) ? 'bg-primary-50 text-primary' : ''
+                  }
+                  key={item.id}
+                  startContent={<Avatar src={item.mpCover}></Avatar>}
+                >
+                  {item.mpName}
+                </ListboxItem>
+              );
+            }) || []}
+          </ListboxSection>
+        </Listbox>
+      ) : (
+        ''
+      )}
+    </>
+  );
+
   return (
     <>
       <div className="h-full flex justify-between">
-        <div className="w-64 p-4 h-full">
-          <div className="pb-4 flex justify-between align-middle items-center">
+        {/* Desktop sidebar */}
+        <div className="hidden md:block w-64 p-4 h-full flex-shrink-0">
+          {feedSidebar}
+        </div>
+        <div className="flex-1 h-full flex flex-col min-w-0">
+          {/* Mobile: feed selector button */}
+          <div className="md:hidden flex items-center gap-2 px-3 py-2 border-b">
+            <Button
+              size="sm"
+              variant="bordered"
+              onPress={() => setIsMobileFeedOpen(true)}
+              className="flex-1 justify-between"
+              endContent={<span className="text-xs">▾</span>}
+            >
+              {currentMpInfo?.mpName || '全部'}
+            </Button>
             <Button
               color="primary"
               size="sm"
               onPress={onOpen}
               endContent={<PlusIcon />}
-            >
-              添加
-            </Button>
-            <div className="font-normal text-sm">
-              共{feedData?.items.length || 0}个订阅
-            </div>
+              isIconOnly
+            />
           </div>
 
-          {feedData?.items ? (
-            <Listbox
-              aria-label="订阅源"
-              emptyContent="暂无订阅"
-              onAction={(key) => setCurrentMpId(key as string)}
-            >
-              <ListboxSection showDivider>
-                <ListboxItem
-                  key={''}
-                  href={`/feeds`}
-                  className={isActive('') ? 'bg-primary-50 text-primary' : ''}
-                  startContent={<Avatar name="ALL"></Avatar>}
-                >
-                  全部
-                </ListboxItem>
-              </ListboxSection>
-
-              <ListboxSection className="overflow-y-auto h-[calc(100vh-260px)]">
-                {feedData?.items.map((item) => {
-                  return (
-                    <ListboxItem
-                      href={`/feeds/${item.id}`}
-                      className={
-                        isActive(item.id) ? 'bg-primary-50 text-primary' : ''
-                      }
-                      key={item.id}
-                      startContent={<Avatar src={item.mpCover}></Avatar>}
-                    >
-                      {item.mpName}
-                    </ListboxItem>
-                  );
-                }) || []}
-              </ListboxSection>
-            </Listbox>
-          ) : (
-            ''
-          )}
-        </div>
-        <div className="flex-1 h-full flex flex-col">
-          <div className="p-4 pb-0 flex justify-between">
-            <h3 className="text-medium font-mono flex-1 overflow-hidden text-ellipsis break-keep text-nowrap pr-1">
+          <div className="p-3 md:p-4 pb-0 flex flex-col md:flex-row md:justify-between gap-1 md:gap-0">
+            <h3 className="text-medium font-mono overflow-hidden text-ellipsis break-keep text-nowrap pr-1 hidden md:block">
               {currentMpInfo?.mpName || '全部'}
             </h3>
             {currentMpInfo ? (
-              <div className="flex h-5 items-center space-x-4 text-small">
+              <div className="flex flex-wrap h-auto md:h-5 items-center gap-x-2 gap-y-1 md:space-x-4 text-small">
                 <div className="font-light">
                   最后更新时间:
                   {dayjs(currentMpInfo.syncTime * 1e3).format(
                     'YYYY-MM-DD HH:mm:ss',
                   )}
                 </div>
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className="hidden md:block" />
                 <Tooltip
                   content="频繁调用可能会导致一段时间内不可用"
                   color="danger"
@@ -231,7 +261,7 @@ const Feeds = () => {
                     {isGetArticlesLoading ? '更新中...' : '立即更新'}
                   </Link>
                 </Tooltip>
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className="hidden md:block" />
                 {currentMpInfo.hasHistory === 1 && (
                   <>
                     <Tooltip
@@ -278,7 +308,7 @@ const Feeds = () => {
                           : `获取历史文章`}
                       </Link>
                     </Tooltip>
-                    <Divider orientation="vertical" />
+                    <Divider orientation="vertical" className="hidden md:block" />
                   </>
                 )}
 
@@ -300,7 +330,7 @@ const Feeds = () => {
                     ></Switch>
                   </div>
                 </Tooltip>
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className="hidden md:block" />
                 <Tooltip content="仅删除订阅源，已获取的文章不会被删除">
                   <Link
                     href="#"
@@ -322,7 +352,7 @@ const Feeds = () => {
                   </Link>
                 </Tooltip>
 
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className="hidden md:block" />
                 <Tooltip
                   content={
                     <div>
@@ -374,7 +404,7 @@ const Feeds = () => {
                 >
                   导出OPML
                 </Link>
-                <Divider orientation="vertical" />
+                <Divider orientation="vertical" className="hidden md:block" />
                 <Link
                   size="sm"
                   showAnchorIcon
@@ -428,6 +458,26 @@ const Feeds = () => {
                   确定
                 </Button>
               </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {/* Mobile feed list drawer */}
+      <Modal
+        isOpen={isMobileFeedOpen}
+        onOpenChange={setIsMobileFeedOpen}
+        placement="bottom-center"
+        className="md:hidden"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          {() => (
+            <>
+              <ModalHeader>选择公众号</ModalHeader>
+              <ModalBody className="pb-6">
+                {feedSidebar}
+              </ModalBody>
             </>
           )}
         </ModalContent>
